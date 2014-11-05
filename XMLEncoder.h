@@ -1,9 +1,10 @@
 #ifndef XML_ENCODER_H
 #define XML_ENCODER_H
 
+#include <QString>
+
 class QIODevice;
 class QObject;
-class QString;
 class QXmlStreamWriter;
 
 class XMLEncoder {
@@ -19,6 +20,7 @@ private:
 
 	QIODevice* _out;
 	QXmlStreamWriter* _stream;
+	QString _currentNamespace;
 };
 
 #endif // XML_ENCODER_H

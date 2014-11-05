@@ -5,7 +5,8 @@
 #include <QXmlStreamWriter>
 #include "XMLEncoder.h"
 
-XMLEncoder::XMLEncoder(QIODevice* out) : _out(out) {
+XMLEncoder::XMLEncoder(QIODevice* out) :
+	_out(out) {
 	_stream = new QXmlStreamWriter(out);
 }
 
@@ -25,7 +26,9 @@ bool XMLEncoder::encode(QObject* object) {
 	int namespaceIndex = meta->indexOfClassInfo("xmlNamespace");
 
 	if (namespaceIndex != -1) {
-		_stream->writeDefaultNamespace(meta->classInfo(namespaceIndex).value());
+		QString xmlNamespace = meta->classInfo(namespaceIndex).value();
+		_stream->writeDefaultNamespace(xmlNamespace);
+		_currentNamespace = xmlNamespace;
 	}
 
 	int versionIndex = meta->indexOfClassInfo("xmlVersion");
@@ -47,8 +50,8 @@ bool XMLEncoder::encode(QObject* object) {
 }
 
 void XMLEncoder::encode(QObject* object, const QString& tagName) {
-	QString tag;
 	auto meta = object->metaObject();
+
 	int marshalMethod =
 	    meta->indexOfMethod(QMetaObject::normalizedSignature("marshalXML(QIODevice*)"));
 
@@ -73,5 +76,19 @@ void XMLEncoder::encode(QObject* object, const QString& tagName) {
 	}
 
 	_stream->writeStartElement(xmlName);
+
+	int namespaceIndex = meta->indexOfClassInfo("xmlNamespace");
+
+	if (namespaceIndex != -1) {
+		QString xmlNamespace = meta->classInfo(namespaceIndex).value();
+		auto namespaceAndPrefix = xmlNamespace.split(" ", QString::SkipEmptyParts);
+
+		if (namespaceAndPrefix.size() > 1
+		    && namespaceAndPrefix[0] != _currentNamespace) {
+			_stream->writeNamespace(namespaceAndPrefix[0], namespaceAndPrefix[1]);
+			_currentNamespace = namespaceAndPrefix[0];
+		}
+	}
+
 	_stream->writeEndElement();
 }
