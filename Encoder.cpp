@@ -2,6 +2,7 @@
 #include <QMetaClassInfo>
 #include <QObject>
 #include <QString>
+#include <QVariant>
 #include <QXmlStreamWriter>
 #include "Encoder.h"
 
@@ -90,5 +91,42 @@ void Encoder::encode(QObject* object, const QString& tagName) {
 		}
 	}
 
+	for (int i = meta->propertyOffset(); i < meta->propertyCount(); i++) {
+		auto property = meta->property(i);
+		auto content = property.read(object);
+		encode(content, QString(property.name()));
+	}
+
 	_stream->writeEndElement();
+}
+
+void Encoder::encode(const QVariant& obj, const QString& tagName)
+{
+	switch (obj.userType()) {
+	case QMetaType::QString:
+	case QMetaType::Bool:
+	case QMetaType::QByteArray:
+	case QMetaType::QChar:
+	case QMetaType::QDate:
+	case QMetaType::QDateTime:
+	case QMetaType::Double:
+	case QMetaType::Int:
+	case QMetaType::LongLong:
+	case QMetaType::QStringList:
+	case QMetaType::QTime:
+	case QMetaType::UInt:
+	case QMetaType::ULongLong:
+		QString xmlName;
+
+		if (tagName.size()) {
+			xmlName = tagName;
+
+		} else {
+			xmlName = obj.typeName();
+		}
+
+		_stream->writeStartElement(xmlName);
+		_stream->writeCharacters(obj.toString());
+		_stream->writeEndElement();
+	}
 }

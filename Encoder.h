@@ -5,6 +5,7 @@
 
 class QIODevice;
 class QObject;
+class QVariant;
 class QXmlStreamWriter;
 
 class Encoder {
@@ -17,6 +18,7 @@ public:
 
 private:
 	void encode(QObject* obj, const QString& tagName);
+	void encode(const QVariant& obj, const QString& tagName);
 
 	QIODevice* _out;
 	QXmlStreamWriter* _stream;
