@@ -3,24 +3,24 @@
 #include <QObject>
 #include <QString>
 #include <QXmlStreamWriter>
-#include "XMLEncoder.h"
+#include "Encoder.h"
 
-XMLEncoder::XMLEncoder(QIODevice* out) :
+Encoder::Encoder(QIODevice* out) :
 	_out(out) {
-	_stream = new QXmlStreamWriter(out);
-}
+		_stream = new QXmlStreamWriter(out);
+	}
 
-XMLEncoder::XMLEncoder(QIODevice* out, int indentationLevel) : _out(out) {
+Encoder::Encoder(QIODevice* out, int indentationLevel) : _out(out) {
 	_stream = new QXmlStreamWriter(out);
 	_stream->setAutoFormatting(true);
 	_stream->setAutoFormattingIndent(indentationLevel);
 }
 
-XMLEncoder::~XMLEncoder() {
+Encoder::~Encoder() {
 	delete _stream;
 }
 
-bool XMLEncoder::encode(QObject* object) {
+bool Encoder::encode(QObject* object) {
 	auto meta = object->metaObject();
 
 	int namespaceIndex = meta->indexOfClassInfo("xmlNamespace");
@@ -33,13 +33,13 @@ bool XMLEncoder::encode(QObject* object) {
 
 	int versionIndex = meta->indexOfClassInfo("xmlVersion");
 	QString version =
-	    versionIndex != -1 ? meta->classInfo(versionIndex).value() : "1.0";
+		versionIndex != -1 ? meta->classInfo(versionIndex).value() : "1.0";
 
 	int standaloneIndex = meta->indexOfClassInfo("xmlStandalone");
 	bool standalone = false;
 
 	if (standaloneIndex != -1
-	    && QString(meta->classInfo(standaloneIndex).value()) == "true") {
+		&& QString(meta->classInfo(standaloneIndex).value()) == "true") {
 		standalone = true;
 	}
 
@@ -49,11 +49,11 @@ bool XMLEncoder::encode(QObject* object) {
 	return _stream->hasError();
 }
 
-void XMLEncoder::encode(QObject* object, const QString& tagName) {
+void Encoder::encode(QObject* object, const QString& tagName) {
 	auto meta = object->metaObject();
 
 	int marshalMethod =
-	    meta->indexOfMethod(QMetaObject::normalizedSignature("marshalXML(QIODevice*)"));
+		meta->indexOfMethod(QMetaObject::normalizedSignature("marshalXML(QIODevice*)"));
 
 	if (marshalMethod != -1) {
 		bool returnValue;
@@ -84,7 +84,7 @@ void XMLEncoder::encode(QObject* object, const QString& tagName) {
 		auto namespaceAndPrefix = xmlNamespace.split(" ", QString::SkipEmptyParts);
 
 		if (namespaceAndPrefix.size() > 1
-		    && namespaceAndPrefix[0] != _currentNamespace) {
+			&& namespaceAndPrefix[0] != _currentNamespace) {
 			_stream->writeNamespace(namespaceAndPrefix[0], namespaceAndPrefix[1]);
 			_currentNamespace = namespaceAndPrefix[0];
 		}

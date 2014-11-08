@@ -7,11 +7,11 @@ class QIODevice;
 class QObject;
 class QXmlStreamWriter;
 
-class XMLEncoder {
+class Encoder {
 public:
-	XMLEncoder(QIODevice*);
-	XMLEncoder(QIODevice* device, int indentationLevel);
-	~XMLEncoder();
+	Encoder(QIODevice*);
+	Encoder(QIODevice* device, int indentationLevel);
+	~Encoder();
 
 	bool encode(QObject*);
 
