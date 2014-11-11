@@ -67,6 +67,7 @@ void Encoder::encode(QObject* object, const QString& tagName) {
 	}
 
 	_stream->writeStartElement(_currentNamespace, xmlName);
+	QString currentNamespace = _currentNamespace;
 
 	auto xmlNamespace = classInfo(meta, "xmlNamespace");
 
@@ -87,6 +88,7 @@ void Encoder::encode(QObject* object, const QString& tagName) {
 	}
 
 	_stream->writeEndElement();
+	_currentNamespace = currentNamespace;
 }
 
 bool Encoder::encode(const Property& property) {
