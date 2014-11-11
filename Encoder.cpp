@@ -4,6 +4,7 @@
 #include <QString>
 #include <QVariant>
 #include <QXmlStreamWriter>
+#include "Property.h"
 #include "Encoder.h"
 
 Encoder::Encoder(QIODevice* out) : _out(out) {
@@ -88,9 +89,32 @@ void Encoder::encode(QObject* object, const QString& tagName) {
 	_stream->writeEndElement();
 }
 
-void Encoder::encode(const QVariant& obj, const QString& tagName) {
-	QString xmlName;
+bool Encoder::encode(const Property& property) {
+	if (property.isAttr()) {
+		_stream->writeAttribute(property.name(), property.value().toString());
+		return _stream->hasError();
+	}
 
+	if (property.isCharData()) {
+		_stream->writeCharacters(property.value().toString());
+		return _stream->hasError();
+	}
+
+	if (property.isInnerXML()) {
+		return _out->write(property.value().toString().toUtf8()) != -1;
+	}
+
+	if (property.alias().isNull()) {
+		encode(property.value(), property.name());
+
+	} else {
+		encode(property.value(), property.alias());
+	}
+
+	return _stream->hasError();
+}
+
+void Encoder::encode(const QVariant& obj, const QString& tagName) {
 	switch (obj.userType()) {
 	case QMetaType::QString:
 	case QMetaType::Bool:
@@ -104,16 +128,7 @@ void Encoder::encode(const QVariant& obj, const QString& tagName) {
 	case QMetaType::QTime:
 	case QMetaType::UInt:
 	case QMetaType::ULongLong:
-		if (!tagName.isEmpty()) {
-			xmlName = tagName;
-
-		} else {
-			xmlName = obj.typeName();
-		}
-
-		_stream->writeStartElement(xmlName);
-		_stream->writeCharacters(obj.toString());
-		_stream->writeEndElement();
+		_stream->writeTextElement(tagName, obj.toString());
 		return;
 	}
 
@@ -129,37 +144,6 @@ void Encoder::encode(const QVariant& obj, const QString& tagName) {
 
 		return;
 	}
-}
-
-PropertyMetadata Encoder::propertyMetadata(const QMetaObject* meta,
-                                           const QString& property) const {
-	PropertyMetadata metadata = {false, false, false, QString()};
-	auto info = classInfo(meta, "xml" + property);
-
-	if (info.isNull()) {
-		return metadata;
-	}
-
-	auto attributes = info.split(",", QString::SkipEmptyParts);
-
-	for (auto attribute : attributes) {
-		auto attr = attribute.trimmed();
-
-		if (attr == "attr") {
-			metadata.isAttr = true;
-
-		} else if (attr == "chardata") {
-			metadata.isCharData = true;
-
-		} else if (attr == "innerxml") {
-			metadata.isInnerXML = true;
-
-		} else if (attr.startsWith("alias:")) {
-			metadata.alias = attr.section('\'', 0, 0);
-		}
-	}
-
-	return metadata;
 }
 
 QString Encoder::classInfo(const QMetaObject* meta, const QString& item) const {

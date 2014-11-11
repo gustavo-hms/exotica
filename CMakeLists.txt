@@ -11,7 +11,7 @@ list(APPEND CMAKE_CXX_FLAGS "-std=c++11")
 # Find the QtWidgets library
 find_package(Qt5Core)
 
-add_library(exotica marshal.cpp Encoder.cpp)
+add_library(exotica marshal.cpp Encoder.cpp Property.cpp)
 
 # Use the Core module from Qt 5.
 target_link_libraries(exotica Qt5::Core)
