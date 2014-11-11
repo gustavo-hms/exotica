@@ -74,9 +74,10 @@ void Encoder::encode(QObject* object, const QString& tagName) {
 	if (!xmlNamespace.isNull()) {
 		auto namespaceAndPrefix = xmlNamespace.split(" ", QString::SkipEmptyParts);
 
-		if (namespaceAndPrefix.size() > 1
+		if (namespaceAndPrefix.size() > 0
 		    && namespaceAndPrefix[0] != _currentNamespace) {
-			_stream->writeNamespace(namespaceAndPrefix[0], namespaceAndPrefix[1]);
+			QString prefix = namespaceAndPrefix.size() > 1 ? namespaceAndPrefix[1] : "";
+			_stream->writeNamespace(namespaceAndPrefix[0], prefix);
 			_currentNamespace = namespaceAndPrefix[0];
 		}
 	}
@@ -109,7 +110,14 @@ bool Encoder::encode(const Property& property) {
 		return _stream->hasError();
 	}
 
+	QString currentNamespace = _currentNamespace;
+
+	if (!property.namespac().isNull()) {
+		_currentNamespace = property.namespac();
+	}
+
 	encode(property.value(), name);
+	_currentNamespace = currentNamespace;
 	return _stream->hasError();
 }
 

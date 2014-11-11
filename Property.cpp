@@ -32,6 +32,9 @@ Property::Property(const QMetaObject* metaobject, const QString& name,
 
 		} else if (attr.startsWith("alias:")) {
 			_alias = attr.section('\'', 1, 1);
+
+		} else if (attr.startsWith("namespace:")) {
+			_namespace = attr.section('\'', 1, 1);
 		}
 	}
 }
@@ -58,4 +61,8 @@ const QString& Property::alias() const {
 
 const QString& Property::name() const {
 	return _name;
+}
+
+const QString& Property::namespac() const {
+	return _namespace;
 }

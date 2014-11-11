@@ -13,6 +13,7 @@ public:
 	bool isInnerXML() const;
 	const QString& alias() const;
 	const QString& name() const;
+	const QString& namespac() const;
 
 private:
 	QString _name;
@@ -22,4 +23,5 @@ private:
 	bool _isCharData;
 	bool _isInnerXML;
 	QString _alias;
+	QString _namespace;
 };
