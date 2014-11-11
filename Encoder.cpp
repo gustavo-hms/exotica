@@ -22,26 +22,18 @@ Encoder::~Encoder() {
 
 bool Encoder::encode(QObject* object) {
 	auto meta = object->metaObject();
+	auto xmlNamespace = classInfo(meta, "xmlNamespace");
 
-	int namespaceIndex = meta->indexOfClassInfo("xmlNamespace");
-
-	if (namespaceIndex != -1) {
-		QString xmlNamespace = meta->classInfo(namespaceIndex).value();
+	if (!xmlNamespace.isNull()) {
 		_stream->writeDefaultNamespace(xmlNamespace);
 		_currentNamespace = xmlNamespace;
 	}
 
-	int versionIndex = meta->indexOfClassInfo("xmlVersion");
-	QString version =
-	    versionIndex != -1 ? meta->classInfo(versionIndex).value() : "1.0";
+	auto xmlVersion = classInfo(meta, "xmlVersion");
+	QString version = xmlVersion.isNull() ? "1.0" : xmlVersion;
 
-	int standaloneIndex = meta->indexOfClassInfo("xmlStandalone");
-	bool standalone = false;
-
-	if (standaloneIndex != -1
-	    && QString(meta->classInfo(standaloneIndex).value()) == "true") {
-		standalone = true;
-	}
+	auto xmlStandalone = classInfo(meta, "xmlStandalone");
+	bool standalone = xmlStandalone == "true" ? true : false;
 
 	_stream->writeStartDocument(version, standalone);
 	encode(object, "");
@@ -62,25 +54,22 @@ void Encoder::encode(QObject* object, const QString& tagName) {
 		return;
 	}
 
-	int xmlNameIndex = meta->indexOfClassInfo("xmlName");
-	QString xmlName;
+	auto xmlName = classInfo(meta, "xmlName");
 
-	if (xmlNameIndex != -1) {
-		xmlName = meta->classInfo(xmlNameIndex).value();
+	if (xmlName.isNull()) {
+		if (!tagName.isEmpty()) {
+			xmlName = tagName;
 
-	} else if (tagName.size()) {
-		xmlName = tagName;
-
-	} else {
-		xmlName = meta->className();
+		} else {
+			xmlName = meta->className();
+		}
 	}
 
 	_stream->writeStartElement(xmlName);
 
-	int namespaceIndex = meta->indexOfClassInfo("xmlNamespace");
+	auto xmlNamespace = classInfo(meta, "xmlNamespace");
 
-	if (namespaceIndex != -1) {
-		QString xmlNamespace = meta->classInfo(namespaceIndex).value();
+	if (!xmlNamespace.isNull()) {
 		auto namespaceAndPrefix = xmlNamespace.split(" ", QString::SkipEmptyParts);
 
 		if (namespaceAndPrefix.size() > 1
@@ -100,19 +89,6 @@ void Encoder::encode(QObject* object, const QString& tagName) {
 }
 
 void Encoder::encode(const QVariant& obj, const QString& tagName) {
-	if (obj.canConvert<QObject*>()) {
-		encode(obj.value<QObject*>(), tagName);
-		return;
-	}
-
-	if (obj.canConvert<QVariantList>()) {
-		for (auto element : obj.value<QSequentialIterable>()) {
-			encode(element, tagName);
-		}
-
-		return;
-	}
-
 	QString xmlName;
 
 	switch (obj.userType()) {
@@ -128,7 +104,7 @@ void Encoder::encode(const QVariant& obj, const QString& tagName) {
 	case QMetaType::QTime:
 	case QMetaType::UInt:
 	case QMetaType::ULongLong:
-		if (tagName.size()) {
+		if (!tagName.isEmpty()) {
 			xmlName = tagName;
 
 		} else {
@@ -138,5 +114,54 @@ void Encoder::encode(const QVariant& obj, const QString& tagName) {
 		_stream->writeStartElement(xmlName);
 		_stream->writeCharacters(obj.toString());
 		_stream->writeEndElement();
+		return;
 	}
+
+	if (obj.canConvert<QObject*>()) {
+		encode(obj.value<QObject*>(), tagName);
+		return;
+	}
+
+	if (obj.canConvert<QVariantList>()) {
+		for (auto element : obj.value<QSequentialIterable>()) {
+			encode(element, tagName);
+		}
+
+		return;
+	}
+}
+
+PropertyMetadata Encoder::propertyMetadata(const QMetaObject* meta,
+                                           const QString& property) const {
+	PropertyMetadata metadata = {false, false, false, QString()};
+	auto info = classInfo(meta, "xml" + property);
+
+	if (info.isNull()) {
+		return metadata;
+	}
+
+	auto attributes = info.split(",", QString::SkipEmptyParts);
+
+	for (auto attribute : attributes) {
+		auto attr = attribute.trimmed();
+
+		if (attr == "attr") {
+			metadata.isAttr = true;
+
+		} else if (attr == "chardata") {
+			metadata.isCharData = true;
+
+		} else if (attr == "innerxml") {
+			metadata.isInnerXML = true;
+
+		} else if (attr.startsWith("alias:")) {
+			metadata.alias = attr.section('\'', 0, 0);
+		}
+	}
+
+	return metadata;
+}
+
+QString Encoder::classInfo(const QMetaObject* meta, const QString& item) const {
+	return meta->classInfo(meta->indexOfClassInfo(item.toUtf8().data())).value();
 }
