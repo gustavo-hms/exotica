@@ -2,8 +2,10 @@
 #include <QMetaClassInfo>
 #include "Property.h"
 
-Property::Property(QMetaObject* metaobject, const QString& name) :
+Property::Property(const QMetaObject* metaobject, const QString& name,
+                   const QVariant& value) :
 	_name(name),
+	_value(value),
 	_isAttr(false),
 	_isCharData(false),
 	_isInnerXML(false) {
@@ -29,13 +31,9 @@ Property::Property(QMetaObject* metaobject, const QString& name) :
 			_isInnerXML = true;
 
 		} else if (attr.startsWith("alias:")) {
-			_alias = attr.section('\'', 0, 0);
+			_alias = attr.section('\'', 1, 1);
 		}
 	}
-}
-
-void Property::setValue(const QVariant& value) {
-	_value = value;
 }
 
 const QVariant& Property::value() const {

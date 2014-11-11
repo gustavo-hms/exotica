@@ -66,7 +66,7 @@ void Encoder::encode(QObject* object, const QString& tagName) {
 		}
 	}
 
-	_stream->writeStartElement(xmlName);
+	_stream->writeStartElement(_currentNamespace, xmlName);
 
 	auto xmlNamespace = classInfo(meta, "xmlNamespace");
 
@@ -81,36 +81,33 @@ void Encoder::encode(QObject* object, const QString& tagName) {
 	}
 
 	for (int i = meta->propertyOffset(); i < meta->propertyCount(); i++) {
-		auto property = meta->property(i);
-		auto content = property.read(object);
-		encode(content, QString(property.name()));
+		auto prop = meta->property(i);
+		Property property(meta, prop.name(), prop.read(object));
+		encode(property);
 	}
 
 	_stream->writeEndElement();
 }
 
 bool Encoder::encode(const Property& property) {
-	if (property.isAttr()) {
-		_stream->writeAttribute(property.name(), property.value().toString());
-		return _stream->hasError();
-	}
-
 	if (property.isCharData()) {
 		_stream->writeCharacters(property.value().toString());
 		return _stream->hasError();
 	}
 
 	if (property.isInnerXML()) {
+		_stream->writeCharacters("");
 		return _out->write(property.value().toString().toUtf8()) != -1;
 	}
 
-	if (property.alias().isNull()) {
-		encode(property.value(), property.name());
+	QString name = property.alias().isNull() ? property.name() : property.alias();
 
-	} else {
-		encode(property.value(), property.alias());
+	if (property.isAttr()) {
+		_stream->writeAttribute(name, property.value().toString());
+		return _stream->hasError();
 	}
 
+	encode(property.value(), name);
 	return _stream->hasError();
 }
 
@@ -128,7 +125,7 @@ void Encoder::encode(const QVariant& obj, const QString& tagName) {
 	case QMetaType::QTime:
 	case QMetaType::UInt:
 	case QMetaType::ULongLong:
-		_stream->writeTextElement(tagName, obj.toString());
+		_stream->writeTextElement(_currentNamespace, tagName, obj.toString());
 		return;
 	}
 

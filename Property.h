@@ -4,8 +4,9 @@ class QMetaObject;
 
 class Property {
 public:
-	Property(QMetaObject* metaobject, const QString& name);
-	void setValue(const QVariant&);
+	Property(const QMetaObject* metaobject, const QString& name,
+	         const QVariant& value);
+
 	const QVariant& value() const;
 	bool isAttr() const;
 	bool isCharData() const;
