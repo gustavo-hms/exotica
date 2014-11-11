@@ -34,7 +34,7 @@ bool Encoder::encode(QObject* object) {
 	QString version = xmlVersion.isNull() ? "1.0" : xmlVersion;
 
 	auto xmlStandalone = classInfo(meta, "xmlStandalone");
-	bool standalone = xmlStandalone == "true" ? true : false;
+	bool standalone = xmlStandalone == "true";
 
 	_stream->writeStartDocument(version, standalone);
 	encode(object, "");
