@@ -10,8 +10,8 @@
 class ExoticaTest : public QObject {
     Q_OBJECT
 private slots:
-    void marshalObject();
-    void marshalObject_data();
+    void marshal();
+    void marshal_data();
 };
 
 // Simple structure of objects
