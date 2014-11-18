@@ -79,4 +79,58 @@ public:
     using ObjectA3::ObjectA3;
 };
 
+// Object with a global namespace
+
+class ObjectA5 : public ObjectA3 {
+    Q_OBJECT
+    Q_CLASSINFO("xmlNamespace", "http://aqui.ali")
+    Q_PROPERTY(QList<double> a31 MEMBER member1)
+    Q_PROPERTY(ObjectA2* a32 MEMBER member2)
+
+public:
+    using ObjectA3::ObjectA3;
+};
+
+// Inner object with a namespace
+
+class ObjectB1 : public QObject {
+    Q_OBJECT
+    Q_CLASSINFO("xmlNamespace", "http://aqui.ali acolá")
+    Q_PROPERTY(int b11 MEMBER member1)
+    Q_PROPERTY(double b12 MEMBER member2)
+    Q_PROPERTY(QString b13 MEMBER member3)
+
+public:
+    ObjectB1(QObject* parent = nullptr) : QObject(parent) {}
+    ObjectB1(int m1, double m2, const QString& m3) :
+        QObject(nullptr),
+        member1(m1),
+        member2(m2),
+        member3(m3) {}
+
+    int member1;
+    double member2;
+    QString member3;
+};
+
+class ObjectB2 : public QObject {
+    Q_OBJECT
+    Q_CLASSINFO("xmlName", "object")
+    Q_PROPERTY(int b21 MEMBER member1)
+    Q_PROPERTY(ObjectB1* b22 MEMBER member2)
+    Q_PROPERTY(int b23 MEMBER member3)
+
+public:
+    ObjectB2(QObject* parent = nullptr) : QObject(parent) {}
+    ObjectB2(int m1, ObjectB1* m2, int m3) :
+        QObject(nullptr),
+        member1(m1),
+        member2(m2),
+        member3(m3) {}
+
+    int member1;
+    ObjectB1* member2;
+    int member3;
+};
+
 #endif // EXOTICA_TEST_H
