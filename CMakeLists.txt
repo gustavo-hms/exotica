@@ -15,3 +15,10 @@ add_library(exotica marshal.cpp Encoder.cpp Property.cpp)
 
 # Use the Core module from Qt 5.
 target_link_libraries(exotica Qt5::Core)
+
+# Tests
+enable_testing()
+add_executable(exotica-test ExoticaTest.cpp)
+find_package(Qt5Test)
+target_link_libraries(exotica-test exotica Qt5::Test)
+add_test(exotica-test exotica-test)
