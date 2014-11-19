@@ -17,23 +17,23 @@ ObjectB2* objectB2 = new ObjectB2 {1, objectB1, 2};
 QString objectB2XML = R"(<?xml version="1.0" encoding="UTF-8" standalone="no"?><object><b21>1</b21><b22 xmlns:acolá="http://aqui.ali"><acolá:b11>17</acolá:b11><acolá:b12>17.17</acolá:b12><acolá:b13>Claro enigma</acolá:b13></b22><b23>2</b23></object>)" "\n";
 
 void ExoticaTest::marshal_data() {
-    QTest::addColumn<QObject*>("object");
-    QTest::addColumn<QString>("xml");
-    QTest::newRow("Simple structure of objects") << (QObject*) objectA3 << objectA3XML;
-    QTest::newRow("Object with a tag name") << (QObject*) objectA4 << objectA4XML;
-    QTest::newRow("Object with a global namespace") << (QObject*) objectA5 << objectA5XML;
-    QTest::newRow("Inner object with a namespace") << (QObject*) objectB2 << objectB2XML;
+	QTest::addColumn<QObject*>("object");
+	QTest::addColumn<QString>("xml");
+	QTest::newRow("Simple structure of objects") << (QObject*) objectA3 << objectA3XML;
+	QTest::newRow("Object with a tag name") << (QObject*) objectA4 << objectA4XML;
+	QTest::newRow("Object with a global namespace") << (QObject*) objectA5 << objectA5XML;
+	QTest::newRow("Inner object with a namespace") << (QObject*) objectB2 << objectB2XML;
 }
 
 void ExoticaTest::marshal() {
-    QFETCH(QObject*, object);
-    QFETCH(QString, xml);
-    QBuffer buffer;
-    buffer.open(QBuffer::WriteOnly);
-    exotica::marshal(object, &buffer);
-    QString result = buffer.data();
-    QCOMPARE(result, xml);
-    buffer.close();
+	QFETCH(QObject*, object);
+	QFETCH(QString, xml);
+	QBuffer buffer;
+	buffer.open(QBuffer::WriteOnly);
+	exotica::marshal(object, &buffer);
+	QString result = buffer.data();
+	QCOMPARE(result, xml);
+	buffer.close();
 }
 
 QTEST_APPLESS_MAIN(ExoticaTest)
