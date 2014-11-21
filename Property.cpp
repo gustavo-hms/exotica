@@ -6,6 +6,7 @@ Property::Property(const QMetaObject* metaobject, const QString& name,
                    const QVariant& value) :
 	_name(name),
 	_value(value),
+	_omitempty(false),
 	_isAttr(false),
 	_isCharData(false),
 	_isInnerXML(false) {
@@ -24,6 +25,9 @@ Property::Property(const QMetaObject* metaobject, const QString& name,
 		if (attr == "attr") {
 			_isAttr = true;
 
+		} else if (attr == "omitempty") {
+			_omitempty = true;
+
 		} else if (attr == "chardata") {
 			_isCharData = true;
 
@@ -41,6 +45,10 @@ Property::Property(const QMetaObject* metaobject, const QString& name,
 
 const QVariant& Property::value() const {
 	return _value;
+}
+
+bool Property::omitempty() const {
+	return _omitempty;
 }
 
 bool Property::isAttr() const {

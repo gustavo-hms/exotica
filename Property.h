@@ -8,6 +8,7 @@ public:
 	         const QVariant& value);
 
 	const QVariant& value() const;
+	bool omitempty() const;
 	bool isAttr() const;
 	bool isCharData() const;
 	bool isInnerXML() const;
@@ -19,6 +20,7 @@ private:
 	QString _name;
 	QMetaObject* _metaobject;
 	QVariant _value;
+	bool _omitempty;
 	bool _isAttr;
 	bool _isCharData;
 	bool _isInnerXML;

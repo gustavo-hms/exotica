@@ -25,7 +25,7 @@ bool Encoder::encode(QObject* object) {
 	auto meta = object->metaObject();
 	auto xmlNamespace = classInfo(meta, "xmlNamespace");
 
-	if (!xmlNamespace.isNull()) {
+	if (not xmlNamespace.isNull()) {
 		_stream->writeDefaultNamespace(xmlNamespace);
 		_currentNamespace = xmlNamespace;
 	}
@@ -58,7 +58,7 @@ void Encoder::encode(QObject* object, const QString& tagName) {
 	auto xmlName = classInfo(meta, "xmlName");
 
 	if (xmlName.isNull()) {
-		if (!tagName.isEmpty()) {
+		if (not tagName.isEmpty()) {
 			xmlName = tagName;
 
 		} else {
@@ -71,7 +71,7 @@ void Encoder::encode(QObject* object, const QString& tagName) {
 
 	auto xmlNamespace = classInfo(meta, "xmlNamespace");
 
-	if (!xmlNamespace.isNull()) {
+	if (not xmlNamespace.isNull()) {
 		auto namespaceAndPrefix = xmlNamespace.split(" ", QString::SkipEmptyParts);
 
 		if (namespaceAndPrefix.size() > 0
@@ -93,6 +93,11 @@ void Encoder::encode(QObject* object, const QString& tagName) {
 }
 
 bool Encoder::encode(const Property& property) {
+	if (property.omitempty()
+	    and (property.value().isNull() or not property.value().toBool())) {
+		return true;
+	}
+
 	if (property.isCharData()) {
 		_stream->writeCharacters(property.value().toString());
 		return _stream->hasError();
@@ -112,7 +117,7 @@ bool Encoder::encode(const Property& property) {
 
 	QString currentNamespace = _currentNamespace;
 
-	if (!property.namespac().isNull()) {
+	if (not property.namespac().isNull()) {
 		_currentNamespace = property.namespac();
 	}
 

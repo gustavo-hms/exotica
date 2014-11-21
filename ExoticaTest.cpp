@@ -35,10 +35,10 @@ auto objectB7 = new ObjectB7 {"<Olá!>"};
 QString objectB7XML = R"(<?xml version="1.0" encoding="UTF-8" standalone="no"?><ObjectB7><Olá!></ObjectB7>)" "\n";
 
 auto objectB8 = new ObjectB8 {0, 0, ""};
-QString objectB8XML = R"(<?xml version="1.0" encoding="UTF-8" standalone="no"?><ObjectB8><b12>0</b12></ObjectB8>)";
+QString objectB8XML = R"(<?xml version="1.0" encoding="UTF-8" standalone="no"?><ObjectB8><b12>0</b12></ObjectB8>)" "\n";
 
 auto objectB9 = new ObjectB9 {0, 0, "Itaporanga"};
-QString objectB9XML = R"(<?xml version="1.0" encoding="UTF-8" standalone="no"?><ObjectB9><prop2 xmlns:n1="http://um.dois">0</prop2><b13>oi</b13></ObjectB9>)";
+QString objectB9XML = R"(<?xml version="1.0" encoding="UTF-8" standalone="no"?><ObjectB9><n1:prop2 xmlns:n1="http://um.dois">0</n1:prop2><b13>Itaporanga</b13></ObjectB9>)" "\n";
 
 void ExoticaTest::marshal_data() {
 	QTest::addColumn<QObject*>("object");
