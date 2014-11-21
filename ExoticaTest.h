@@ -93,7 +93,7 @@ public:
 
 // Inner object with a namespace
 
-class ObjectB1 : public QObject {
+class ObjectB1 : public ObjectA1 {
 	Q_OBJECT
 	Q_CLASSINFO("xmlNamespace", "http://aqui.ali acolá")
 	Q_PROPERTY(int b11 MEMBER member1)
@@ -101,36 +101,122 @@ class ObjectB1 : public QObject {
 	Q_PROPERTY(QString b13 MEMBER member3)
 	
 public:
-	ObjectB1(QObject* parent = nullptr) : QObject(parent) {}
-	ObjectB1(int m1, double m2, const QString& m3) :
-	    QObject(nullptr),
-	    member1(m1),
-	    member2(m2),
-	    member3(m3) {}
-	
-	int member1;
-	double member2;
-	QString member3;
+	using ObjectA1::ObjectA1;
 };
 
 class ObjectB2 : public QObject {
 	Q_OBJECT
 	Q_CLASSINFO("xmlName", "object")
+	Q_CLASSINFO("xmlNamespace", "http://um.nome")
 	Q_PROPERTY(int b21 MEMBER member1)
-	Q_PROPERTY(ObjectB1* b22 MEMBER member2)
+	Q_PROPERTY(QObject* b22 MEMBER member2)
 	Q_PROPERTY(int b23 MEMBER member3)
 	
 public:
 	ObjectB2(QObject* parent = nullptr) : QObject(parent) {}
-	ObjectB2(int m1, ObjectB1* m2, int m3) :
+	ObjectB2(int m1, QObject* m2, int m3) :
 	    QObject(nullptr),
 	    member1(m1),
 	    member2(m2),
 	    member3(m3) {}
 	
 	int member1;
-	ObjectB1* member2;
+	QObject* member2;
 	int member3;
+};
+
+// Member with the namespace of a parent
+
+class ObjectB3 : public ObjectB1 {
+	Q_OBJECT
+	Q_CLASSINFO("xmlNamespace", "http://aqui.ali acolá")
+	Q_CLASSINFO("xml b12", "namespace:'http://um.nome'")
+	Q_PROPERTY(int b11 MEMBER member1)
+	Q_PROPERTY(double b12 MEMBER member2)
+	Q_PROPERTY(QString b13 MEMBER member3)
+
+public:
+	using ObjectB1::ObjectB1;
+};
+
+// Member with an alias
+
+class ObjectB4 : public ObjectA1 {
+	Q_OBJECT
+	Q_CLASSINFO("xml b11", "alias:'outro nome'")
+	Q_PROPERTY(int b11 MEMBER member1)
+	Q_PROPERTY(double b12 MEMBER member2)
+	Q_PROPERTY(QString b13 MEMBER member3)
+
+public:
+	using ObjectA1::ObjectA1;
+};
+
+// An attribute
+
+class ObjectB5 : public ObjectA1 {
+	Q_OBJECT
+	Q_CLASSINFO("xml b13", "attr")
+	Q_PROPERTY(QString b13 MEMBER member3)
+	Q_PROPERTY(int b11 MEMBER member1)
+	Q_PROPERTY(double b12 MEMBER member2)
+
+public:
+	using ObjectA1::ObjectA1;
+};
+
+// Chardata
+
+class ObjectB6 : public ObjectA1 {
+	Q_OBJECT
+	Q_CLASSINFO("xml b13", "chardata")
+	Q_PROPERTY(QString b13 MEMBER member3)
+
+public:
+	ObjectB6(QObject* parent = nullptr) : ObjectA1(parent) {}
+	ObjectB6(const QString& m3) :
+		ObjectA1(0, 0, m3) {}
+};
+
+// Inner XML
+
+class ObjectB7 : public ObjectA1 {
+	Q_OBJECT
+	Q_CLASSINFO("xml b13", "innerxml")
+	Q_PROPERTY(QString b13 MEMBER member3)
+
+public:
+	ObjectB7(QObject* parent = nullptr) : ObjectA1(parent) {}
+	ObjectB7(const QString& m3) :
+		ObjectA1(0, 0, m3) {}
+};
+
+// Omitempty
+
+class ObjectB8 : public ObjectA1 {
+	Q_OBJECT
+	Q_CLASSINFO("xml b11", "omitempty")
+	Q_CLASSINFO("xml b13", "omitempty")
+	Q_PROPERTY(int b11 MEMBER member1)
+	Q_PROPERTY(double b12 MEMBER member2)
+	Q_PROPERTY(QString b13 MEMBER member3)
+
+public:
+	using ObjectA1::ObjectA1;
+};
+
+// Mixed member attributes
+
+class ObjectB9 : public ObjectA1 {
+	Q_OBJECT
+	Q_CLASSINFO("xml b11", "alias:'prop1',omitempty")
+	Q_CLASSINFO("xml b12", "alias:'prop2',namespace:'http://um.dois'")
+	Q_PROPERTY(int b11 MEMBER member1)
+	Q_PROPERTY(double b12 MEMBER member2)
+	Q_PROPERTY(QString b13 MEMBER member3)
+
+public:
+	using ObjectA1::ObjectA1;
 };
 
 #endif // EXOTICA_TEST_H
