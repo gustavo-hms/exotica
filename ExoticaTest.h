@@ -209,7 +209,7 @@ public:
 
 class ObjectB9 : public ObjectA1 {
 	Q_OBJECT
-	Q_CLASSINFO("xml b11", "alias:'prop1',omitempty")
+	Q_CLASSINFO("xml b11", "alias:'prop1',attr")
 	Q_CLASSINFO("xml b12", "alias:'prop2',namespace:'http://um.dois'")
 	Q_PROPERTY(int b11 MEMBER member1)
 	Q_PROPERTY(double b12 MEMBER member2)

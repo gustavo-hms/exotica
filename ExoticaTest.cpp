@@ -34,11 +34,14 @@ QString objectB6XML = R"(<?xml version="1.0" encoding="UTF-8" standalone="no"?><
 auto objectB7 = new ObjectB7 {"<Olá!>"};
 QString objectB7XML = R"(<?xml version="1.0" encoding="UTF-8" standalone="no"?><ObjectB7><Olá!></ObjectB7>)" "\n";
 
-auto objectB8 = new ObjectB8 {0, 0, ""};
-QString objectB8XML = R"(<?xml version="1.0" encoding="UTF-8" standalone="no"?><ObjectB8><b12>0</b12></ObjectB8>)" "\n";
+auto objectB8a = new ObjectB8 {0, 0, ""};
+QString objectB8aXML = R"(<?xml version="1.0" encoding="UTF-8" standalone="no"?><ObjectB8><b12>0</b12></ObjectB8>)" "\n";
 
-auto objectB9 = new ObjectB9 {0, 0, "Itaporanga"};
-QString objectB9XML = R"(<?xml version="1.0" encoding="UTF-8" standalone="no"?><ObjectB9><n1:prop2 xmlns:n1="http://um.dois">0</n1:prop2><b13>Itaporanga</b13></ObjectB9>)" "\n";
+auto objectB8b = new ObjectB8 {1, 0, "Falatório"};
+QString objectB8bXML = R"(<?xml version="1.0" encoding="UTF-8" standalone="no"?><ObjectB8><b11>1</b11><b12>0</b12><b13>Falatório</b13></ObjectB8>)" "\n";
+
+auto objectB9 = new ObjectB9 {17, 0, "Itaporanga"};
+QString objectB9XML = R"(<?xml version="1.0" encoding="UTF-8" standalone="no"?><ObjectB9 prop1="17"><n1:prop2 xmlns:n1="http://um.dois">0</n1:prop2><b13>Itaporanga</b13></ObjectB9>)" "\n";
 
 void ExoticaTest::marshal_data() {
 	QTest::addColumn<QObject*>("object");
@@ -52,7 +55,8 @@ void ExoticaTest::marshal_data() {
 	QTest::newRow("An attribute") << (QObject*) objectB2_5 << objectB2_5XML;
 	QTest::newRow("Chardata") << (QObject*) objectB6 << objectB6XML;
 	QTest::newRow("Inner XML") << (QObject*) objectB7 << objectB7XML;
-	QTest::newRow("Omitempty") << (QObject*) objectB8 << objectB8XML;
+	QTest::newRow("Omitempty with empty values") << (QObject*) objectB8a << objectB8aXML;
+	QTest::newRow("Omitempty whitout empty values") << (QObject*) objectB8b << objectB8bXML;
 	QTest::newRow("Mixed member attributes") << (QObject*) objectB9 << objectB9XML;
 }
 
@@ -61,7 +65,8 @@ void ExoticaTest::marshal() {
 	QFETCH(QString, xml);
 	QBuffer buffer;
 	buffer.open(QBuffer::WriteOnly);
-	exotica::marshal(object, &buffer);
+	bool ok = exotica::marshal(object, &buffer);
+	QVERIFY(not ok);
 	QString result = buffer.data();
 	QCOMPARE(result, xml);
 	buffer.close();
