@@ -5,6 +5,40 @@ auto objectA1 = new ObjectA1 {17, 17.17, "Claro enigma"};
 auto objectA2 = new ObjectA2 {objectA1, {1, 2, 3}};
 auto objectA3 = new ObjectA3 {{1.2, 1.3}, objectA2};
 QString objectA3XML = R"(<?xml version="1.0" encoding="UTF-8" standalone="no"?><ObjectA3><a31>1.2</a31><a31>1.3</a31><a32><a21><a11>17</a11><a12>17.17</a12><a13>Claro enigma</a13></a21><a22>1</a22><a22>2</a22><a22>3</a22></a32></ObjectA3>)" "\n";
+QString objectA3XMLIndentedWithTabs =
+R"(<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<ObjectA3>
+	<a31>1.2</a31>
+	<a31>1.3</a31>
+	<a32>
+		<a21>
+			<a11>17</a11>
+			<a12>17.17</a12>
+			<a13>Claro enigma</a13>
+		</a21>
+		<a22>1</a22>
+		<a22>2</a22>
+		<a22>3</a22>
+	</a32>
+</ObjectA3>
+)";
+QString objectA3XMLIndentedWithSpaces =
+R"(<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<ObjectA3>
+  <a31>1.2</a31>
+  <a31>1.3</a31>
+  <a32>
+    <a21>
+      <a11>17</a11>
+      <a12>17.17</a12>
+      <a13>Claro enigma</a13>
+    </a21>
+    <a22>1</a22>
+    <a22>2</a22>
+    <a22>3</a22>
+  </a32>
+</ObjectA3>
+)";
 
 auto objectA4 = new ObjectA4 {{1.2, 1.3}, objectA2};
 QString objectA4XML = R"(<?xml version="1.0" encoding="UTF-8" standalone="no"?><object><a31>1.2</a31><a31>1.3</a31><a32><a21><a11>17</a11><a12>17.17</a12><a13>Claro enigma</a13></a21><a22>1</a22><a22>2</a22><a22>3</a22></a32></object>)" "\n";
@@ -66,6 +100,25 @@ void ExoticaTest::marshal() {
 	QBuffer buffer;
 	buffer.open(QBuffer::WriteOnly);
 	bool ok = exotica::marshal(object, &buffer);
+	QVERIFY(not ok);
+	QString result = buffer.data();
+	QCOMPARE(result, xml);
+	buffer.close();
+}
+
+void ExoticaTest::marshalIndent_data() {
+	QTest::addColumn<int>("level");
+	QTest::addColumn<QString>("xml");
+	QTest::newRow("1 tab") << -1 << objectA3XMLIndentedWithTabs;
+	QTest::newRow("2 spaces") << 2 << objectA3XMLIndentedWithSpaces;
+}
+
+void ExoticaTest::marshalIndent() {
+	QFETCH(int, level);
+	QFETCH(QString, xml);
+	QBuffer buffer;
+	buffer.open(QBuffer::WriteOnly);
+	bool ok = exotica::marshalIndent(objectA3, &buffer, level);
 	QVERIFY(not ok);
 	QString result = buffer.data();
 	QCOMPARE(result, xml);

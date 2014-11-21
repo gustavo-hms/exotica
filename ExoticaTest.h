@@ -12,6 +12,8 @@ class ExoticaTest : public QObject {
 private slots:
 	void marshal();
 	void marshal_data();
+	void marshalIndent();
+	void marshalIndent_data();
 };
 
 // Simple structure of objects
