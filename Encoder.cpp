@@ -27,6 +27,11 @@ bool Encoder::encode(QObject* object) {
 
 	if (not xmlNamespace.isNull()) {
 		_stream->writeDefaultNamespace(xmlNamespace);
+
+		if (_stream->hasError()) {
+			return false;
+		}
+
 		_currentNamespace = xmlNamespace;
 	}
 
@@ -37,12 +42,17 @@ bool Encoder::encode(QObject* object) {
 	bool standalone = xmlStandalone == "true";
 
 	_stream->writeStartDocument(version, standalone);
-	encode(object, "");
+	bool ok = encode(object, "");
+
+	if (not ok) {
+		return false;
+	}
+
 	_stream->writeEndDocument();
-	return _stream->hasError();
+	return not _stream->hasError();
 }
 
-void Encoder::encode(QObject* object, const QString& tagName) {
+bool Encoder::encode(QObject* object, const QString& tagName) {
 	auto meta = object->metaObject();
 
 	int marshalMethod =
@@ -52,7 +62,7 @@ void Encoder::encode(QObject* object, const QString& tagName) {
 		bool returnValue;
 		auto method = meta->method(marshalMethod);
 		method.invoke(object, Q_RETURN_ARG(bool, returnValue), Q_ARG(QIODevice*, _out));
-		return;
+		return returnValue;
 	}
 
 	auto xmlName = classInfo(meta, "xmlName");
@@ -67,8 +77,12 @@ void Encoder::encode(QObject* object, const QString& tagName) {
 	}
 
 	_stream->writeStartElement(_currentNamespace, xmlName);
-	QString currentNamespace = _currentNamespace;
+	
+	if (_stream->hasError()) {
+		return false;
+	}
 
+	QString currentNamespace = _currentNamespace;
 	auto xmlNamespace = classInfo(meta, "xmlNamespace");
 
 	if (not xmlNamespace.isNull()) {
@@ -78,6 +92,11 @@ void Encoder::encode(QObject* object, const QString& tagName) {
 		    && namespaceAndPrefix[0] != _currentNamespace) {
 			QString prefix = namespaceAndPrefix.size() > 1 ? namespaceAndPrefix[1] : "";
 			_stream->writeNamespace(namespaceAndPrefix[0], prefix);
+
+			if (_stream->hasError()) {
+				return false;
+			}
+
 			_currentNamespace = namespaceAndPrefix[0];
 		}
 	}
@@ -90,6 +109,7 @@ void Encoder::encode(QObject* object, const QString& tagName) {
 
 	_stream->writeEndElement();
 	_currentNamespace = currentNamespace;
+	return not _stream->hasError();
 }
 
 bool Encoder::encode(const Property& property) {
@@ -100,7 +120,7 @@ bool Encoder::encode(const Property& property) {
 
 	if (property.isCharData()) {
 		_stream->writeCharacters(property.value().toString());
-		return _stream->hasError();
+		return not _stream->hasError();
 	}
 
 	if (property.isInnerXML()) {
@@ -112,7 +132,7 @@ bool Encoder::encode(const Property& property) {
 
 	if (property.isAttr()) {
 		_stream->writeAttribute(name, property.value().toString());
-		return _stream->hasError();
+		return not _stream->hasError();
 	}
 
 	QString currentNamespace = _currentNamespace;
@@ -123,10 +143,10 @@ bool Encoder::encode(const Property& property) {
 
 	encode(property.value(), name);
 	_currentNamespace = currentNamespace;
-	return _stream->hasError();
+	return not _stream->hasError();
 }
 
-void Encoder::encode(const QVariant& obj, const QString& tagName) {
+bool Encoder::encode(const QVariant& obj, const QString& tagName) {
 	switch (obj.userType()) {
 	case QMetaType::QString:
 	case QMetaType::Bool:
@@ -141,21 +161,24 @@ void Encoder::encode(const QVariant& obj, const QString& tagName) {
 	case QMetaType::UInt:
 	case QMetaType::ULongLong:
 		_stream->writeTextElement(_currentNamespace, tagName, obj.toString());
-		return;
+		return not _stream->hasError();
 	}
 
 	if (obj.canConvert<QObject*>()) {
-		encode(obj.value<QObject*>(), tagName);
-		return;
+		return encode(obj.value<QObject*>(), tagName);
 	}
 
 	if (obj.canConvert<QVariantList>()) {
 		for (auto element : obj.value<QSequentialIterable>()) {
-			encode(element, tagName);
-		}
+			bool ok = encode(element, tagName);
 
-		return;
+			if (not ok) {
+				return false;
+			}
+		}
 	}
+
+	return true;
 }
 
 QString Encoder::classInfo(const QMetaObject* meta, const QString& item) const {

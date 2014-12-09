@@ -14,6 +14,8 @@ private slots:
 	void marshal_data();
 	void marshalIndent();
 	void marshalIndent_data();
+	void marshalWithBrokenIODevice();
+	void marshalWithBrokenIODevice_data();
 };
 
 // Simple structure of objects
@@ -219,6 +221,20 @@ class ObjectB9 : public ObjectA1 {
 
 public:
 	using ObjectA1::ObjectA1;
+};
+
+class MockIODevice : public QIODevice {
+	Q_OBJECT
+	
+public:
+	MockIODevice(unsigned writesBeforeFail);
+
+	qint64 readData(char*, qint64);
+	qint64 writeData(const char*, qint64);
+	unsigned counter;
+
+private:
+	unsigned _writesBeforeFail;
 };
 
 #endif // EXOTICA_TEST_H

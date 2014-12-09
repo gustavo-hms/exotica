@@ -19,9 +19,9 @@ public:
 	bool encode(QObject*);
 
 private:
-	void encode(QObject* obj, const QString& tagName);
+	bool encode(QObject* obj, const QString& tagName);
 	bool encode(const Property&);
-	void encode(const QVariant& obj, const QString& tagName);
+	bool encode(const QVariant& obj, const QString& tagName);
 	QString classInfo(const QMetaObject* metaobject, const QString& item) const;
 
 	QIODevice* _out;

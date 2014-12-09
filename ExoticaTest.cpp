@@ -100,7 +100,7 @@ void ExoticaTest::marshal() {
 	QBuffer buffer;
 	buffer.open(QBuffer::WriteOnly);
 	bool ok = exotica::marshal(object, &buffer);
-	QVERIFY(not ok);
+	QVERIFY(ok);
 	QString result = buffer.data();
 	QCOMPARE(result, xml);
 	buffer.close();
@@ -119,10 +119,41 @@ void ExoticaTest::marshalIndent() {
 	QBuffer buffer;
 	buffer.open(QBuffer::WriteOnly);
 	bool ok = exotica::marshalIndent(objectA3, &buffer, level);
-	QVERIFY(not ok);
+	QVERIFY(ok);
 	QString result = buffer.data();
 	QCOMPARE(result, xml);
 	buffer.close();
+}
+
+void ExoticaTest::marshalWithBrokenIODevice_data() {
+	const int totalOfWritesForObjectB2 = 73;
+	QTest::addColumn<unsigned>("writesBeforeFail");
+
+	for (unsigned i=0; i < totalOfWritesForObjectB2; i++) {
+		QTest::newRow(QString("%1 writes before fail").arg(i).toUtf8()) << i;
+	}
+}
+
+void ExoticaTest::marshalWithBrokenIODevice() {
+	QFETCH(unsigned, writesBeforeFail);
+	MockIODevice device(writesBeforeFail);
+	device.open(QBuffer::WriteOnly);
+	bool ok = exotica::marshal(objectB2, &device);
+	QVERIFY(not ok);
+	QCOMPARE(writesBeforeFail + 1, device.counter);
+	device.close();
+}
+
+MockIODevice::MockIODevice(unsigned writesBeforeFail) :
+	QIODevice(nullptr), _writesBeforeFail(writesBeforeFail), counter(0) {}
+
+qint64 MockIODevice::readData(char* data, qint64 maxSize) {
+	return maxSize;
+}
+
+qint64 MockIODevice::writeData(const char* data, qint64 maxSize) {
+	counter++;
+	return counter > _writesBeforeFail? -1 : maxSize;
 }
 
 QTEST_APPLESS_MAIN(ExoticaTest)
