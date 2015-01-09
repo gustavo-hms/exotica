@@ -7,12 +7,11 @@
 #include "Property.h"
 #include "Encoder.h"
 
-Encoder::Encoder(QIODevice* out) : _out(out) {
-	_stream = new QXmlStreamWriter(out);
+Encoder::Encoder(QIODevice* out) : _out(out), _stream(new QXmlStreamWriter(out)) {
 }
 
-Encoder::Encoder(QIODevice* out, int indentationLevel) : _out(out) {
-	_stream = new QXmlStreamWriter(out);
+Encoder::Encoder(QIODevice* out, int indentationLevel) :
+	_out(out), _stream(new QXmlStreamWriter(out))  {
 	_stream->setAutoFormatting(true);
 	_stream->setAutoFormattingIndent(indentationLevel);
 }
