@@ -7,7 +7,8 @@
 #include "Property.h"
 #include "Encoder.h"
 
-Encoder::Encoder(QIODevice* out) : _out(out), _stream(new QXmlStreamWriter(out)) {
+Encoder::Encoder(QIODevice* out) : _out(out),
+	_stream(new QXmlStreamWriter(out)) {
 }
 
 Encoder::Encoder(QIODevice* out, int indentationLevel) :
@@ -76,7 +77,7 @@ bool Encoder::encode(QObject* object, const QString& tagName) {
 	}
 
 	_stream->writeStartElement(_currentNamespace, xmlName);
-	
+
 	if (_stream->hasError()) {
 		return false;
 	}
@@ -102,7 +103,7 @@ bool Encoder::encode(QObject* object, const QString& tagName) {
 
 	for (int i = meta->propertyOffset(); i < meta->propertyCount(); i++) {
 		auto prop = meta->property(i);
-		Property property(meta, prop.name(), prop.read(object));
+		Property property(object, prop.name());
 		encode(property);
 	}
 

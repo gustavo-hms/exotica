@@ -1,15 +1,27 @@
 #include <QMetaObject>
 #include <QMetaClassInfo>
+#include <QVector>
 #include "Property.h"
 
-Property::Property(const QMetaObject* metaobject, const QString& name,
-                   const QVariant& value) :
+Property::Property() :
+	_object(nullptr),
+	_name(""),
+	_omitempty(false),
+	_isAttr(false),
+	_isCharData(false),
+	_isInnerXML(false),
+	_alias(""),
+	_namespace("") {
+}
+
+Property::Property(QObject* object, const QString& name) :
+	_object(object),
 	_name(name),
-	_value(value),
 	_omitempty(false),
 	_isAttr(false),
 	_isCharData(false),
 	_isInnerXML(false) {
+	auto metaobject = object->metaObject();
 	int index = metaobject->indexOfClassInfo(("xml " + name).toUtf8().data());
 
 	if (index == -1) {
@@ -43,8 +55,27 @@ Property::Property(const QMetaObject* metaobject, const QString& name,
 	}
 }
 
-const QVariant& Property::value() const {
-	return _value;
+QVector<Property> Property::extractAll(QObject* object) {
+	auto meta = object->metaObject();
+	int offset = meta->propertyOffset();
+	int numberOfProperties = meta->propertyCount() - offset;
+	QVector<Property> properties(numberOfProperties);
+
+	for (int i = 0; i < numberOfProperties; i++) {
+		auto prop = meta->property(i + offset);
+		Property property(object, prop.name());
+		properties[i] = property;
+	}
+
+	return properties;
+}
+
+void Property::set(const QVariant& value) {
+	_object->setProperty(_name.toUtf8(), value);
+}
+
+QVariant Property::value() const {
+	return _object->property(_name.toUtf8());
 }
 
 bool Property::omitempty() const {

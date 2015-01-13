@@ -1,13 +1,16 @@
 #include <QString>
 
-class QMetaObject;
+class QObject;
 
 class Property {
 public:
-	Property(const QMetaObject* metaobject, const QString& name,
-	         const QVariant& value);
+	Property();
+	Property(QObject* object, const QString& name);
 
-	const QVariant& value() const;
+	static QVector<Property> extractAll(QObject* object);
+
+	void set(const QVariant&);
+	QVariant value() const;
 	bool omitempty() const;
 	bool isAttr() const;
 	bool isCharData() const;
@@ -17,9 +20,8 @@ public:
 	const QString& namespac() const;
 
 private:
+	QObject* _object;
 	QString _name;
-	QMetaObject* _metaobject;
-	QVariant _value;
 	bool _omitempty;
 	bool _isAttr;
 	bool _isCharData;

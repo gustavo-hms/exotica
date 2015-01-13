@@ -1,5 +1,6 @@
 #include "exotica.h"
 #include "Encoder.h"
+#include "Decoder.h"
 
 class QObject;
 class QIODevice;
@@ -9,7 +10,13 @@ bool exotica::marshal(QObject* object, QIODevice* destination) {
 	return encoder.encode(object);
 }
 
-bool exotica::marshalIndent(QObject* object, QIODevice* destination, int level) {
+bool exotica::marshalIndent(QObject* object, QIODevice* destination,
+                            int level) {
 	Encoder encoder(destination, level);
 	return encoder.encode(object);
+}
+
+bool exotica::unmarshal(QIODevice* source, QObject* object) {
+	Decoder decoder(source);
+	return decoder.decode(object);
 }

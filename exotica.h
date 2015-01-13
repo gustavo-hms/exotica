@@ -11,7 +11,7 @@ namespace exotica {
 
 bool marshal(QObject* object, QIODevice* destination);
 bool marshalIndent(QObject* object, QIODevice* destination, int level = 2);
-/* bool unmarshal(QIODevice* source, QObject* object); */
+bool unmarshal(QIODevice* source, QObject* object);
 
 }
 
