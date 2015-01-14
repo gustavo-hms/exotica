@@ -11,13 +11,7 @@ Decoder::~Decoder() {
 }
 
 bool Decoder::decode(QObject* object) {
-	while (not _stream->atEnd()) {
-		bool thereIsMore = _stream->readNextStartElement();
-
-		if (not thereIsMore) {
-			break;
-		}
-
+	while (_stream->readNextStartElement()) {
 		auto meta = object->metaObject();
 		auto xmlName = classInfo(meta, "xmlName");
 
@@ -40,6 +34,8 @@ bool Decoder::decode(QObject* object) {
 		if (not ok) {
 			return false;
 		}
+
+		break;
 	}
 
 	return not _stream->hasError();
@@ -117,16 +113,7 @@ bool Decoder::decode(Property& property) {
 	}
 
 	auto xmlName = _stream->name();
-
-	do {
-		_stream->readNext();
-	} while (_stream->name() != xmlName and not _stream->isCharacters());
-
-	if (not _stream->isCharacters()) {
-		return not _stream->hasError();
-	}
-
-	property.set(_stream->text().toString());
+	property.set(_stream->readElementText());
 	return not _stream->hasError();
 }
 
