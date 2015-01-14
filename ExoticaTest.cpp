@@ -1,6 +1,8 @@
 #include "ExoticaTest.h"
 #include "exotica.h"
 
+#include <QDebug>
+
 auto objectA1 = new ObjectA1 {17, 17.17, "Claro enigma"};
 auto objectA2 = new ObjectA2 {objectA1, {1, 2, 3}};
 auto objectA3 = new ObjectA3 {{1.2, 1.3}, objectA2};
@@ -142,6 +144,54 @@ void ExoticaTest::marshalWithBrokenIODevice() {
 	QVERIFY(not ok);
 	QCOMPARE(writesBeforeFail + 1, device.counter);
 	device.close();
+}
+
+void ExoticaTest::unmarshal_data() {
+	QTest::addColumn<QString>("xml");
+	QTest::addColumn<QObject*>("object");
+	QTest::addColumn<QObject*>("expected");
+	QTest::newRow("Simple XML") << R"(<ObjectA1><a11>17</a11><a12>17.17</a12><a13>Claro enigma</a13></ObjectA1>)" << (QObject*) new ObjectA1 << (QObject*) objectA1;
+}
+
+void ExoticaTest::unmarshal() {
+	QFETCH(QString, xml);
+	QFETCH(QObject*, object);
+	QFETCH(QObject*, expected);
+
+	auto data = xml.toUtf8();
+	QBuffer buffer(&data);
+	buffer.open(QBuffer::ReadOnly);
+	bool ok = exotica::unmarshal(&buffer, object);
+	QVERIFY(ok);
+	QVERIFY(equal(object, expected));
+}
+
+bool equal(const QObject* a, const QObject* b) {
+	auto metaA = a->metaObject();
+	auto metaB = b->metaObject();
+
+	if (metaA->className() != metaB->className()) {
+		return false;
+	}
+
+	for (int i = metaA->propertyOffset(); i < metaA->propertyCount(); i++) {
+		auto valueA = metaA->property(i).read(a);
+		auto valueB = metaB->property(i).read(b);
+		bool areEqual;
+
+		if (valueA.canConvert<QObject*>()) {
+			areEqual = equal(valueA.value<QObject*>(), valueB.value<QObject*>());
+
+		} else {
+			areEqual = valueA == valueB;
+		}
+
+		if (not areEqual) {
+			return false;
+		}
+	}
+
+	return true;
 }
 
 MockIODevice::MockIODevice(unsigned writesBeforeFail) :
