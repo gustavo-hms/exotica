@@ -1,7 +1,6 @@
 #include <QMetaProperty>
 #include <QXmlStreamReader>
 #include "Decoder.h"
-#include "Property.h"
 
 Decoder::Decoder(QIODevice* in) : _in(in), _stream(new QXmlStreamReader(in)) {
 }
@@ -43,15 +42,21 @@ bool Decoder::decode(QObject* object) {
 
 bool Decoder::decodeChildrenIntoProperties(QObject* object) {
 	auto properties = Property::extractAll(object);
-	int lastMatchProperty = -1;
+	int startFromProperty = 0;
+	QStringRef lastXMLElement;
 
 	while (_stream->readNextStartElement()) {
-		for (int i = lastMatchProperty + 1; i < properties.size(); i++) {
+		for (int i = startFromProperty; i < properties.size(); i++) {
 			auto name =
 			    properties[i].alias().isNull() ? properties[i].name() : properties[i].alias();
+			auto xmlName = _stream->name();
 
-			if (_stream->name() == name) {
-				lastMatchProperty = i;
+			if (xmlName == name) {
+				if (xmlName != lastXMLElement) {
+					startFromProperty = i;
+					lastXMLElement = xmlName;
+				}
+
 				bool ok = decode(properties[i]);
 
 				if (not ok) {
@@ -68,7 +73,7 @@ bool Decoder::decodeChildrenIntoProperties(QObject* object) {
 						properties[k].set(attributes.value(name).string());
 					}
 
-					lastMatchProperty++;
+					startFromProperty++;
 				}
 
 				break;
@@ -80,17 +85,6 @@ bool Decoder::decodeChildrenIntoProperties(QObject* object) {
 }
 
 bool Decoder::decode(Property& property) {
-	auto value = property.value();
-
-	if (value.canConvert<QObject*>()) {
-		return decodeChildrenIntoProperties(value.value<QObject*>());
-	}
-
-	if (property.isInnerXML()) {
-		property.set(_stream->readElementText(QXmlStreamReader::IncludeChildElements));
-		return not _stream->hasError();
-	}
-
 	auto namespac = property.namespac();
 
 	if (not namespac.isNull()) {
@@ -112,9 +106,41 @@ bool Decoder::decode(Property& property) {
 		return not _stream->hasError();
 	}
 
+	auto value = property.value();
+
+	if (value.canConvert<QObject*>()) {
+		return decodeChildrenIntoProperties(value.value<QObject*>());
+	}
+
+	if (value.canConvert<QVariantList>()) {
+		return decodeIntoList(property);
+	}
+
+	if (property.isInnerXML()) {
+		property.set(_stream->readElementText(QXmlStreamReader::IncludeChildElements));
+		return not _stream->hasError();
+	}
+
 	auto xmlName = _stream->name();
 	property.set(_stream->readElementText());
 	return not _stream->hasError();
+}
+
+bool Decoder::decodeIntoList(Property& property) {
+	QVariant xmlValue = _stream->readElementText();
+	auto prop = property.value();
+
+	if (prop.canConvert<QList<int>>()) {
+		appendToList<int>(property, xmlValue);
+		return not _stream->hasError();
+	}
+
+	if (prop.canConvert<QList<double>>()) {
+		appendToList<double>(property, xmlValue);
+		return not _stream->hasError();
+	}
+
+	return true;
 }
 
 QString Decoder::classInfo(const QMetaObject* meta, const QString& item) const {
