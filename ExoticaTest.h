@@ -3,7 +3,6 @@
 
 #include <QObject>
 #include <QList>
-#include <QVector>
 #include <QString>
 #include <QtTest/QtTest>
 
@@ -46,17 +45,17 @@ public:
 class ObjectA2 : public QObject {
 	Q_OBJECT
 	Q_PROPERTY(ObjectA1* a21 MEMBER member1)
-	Q_PROPERTY(QVector<int> a22 MEMBER member2)
+	Q_PROPERTY(QList<int> a22 MEMBER member2)
 
 public:
 	ObjectA2(QObject* parent = nullptr) : QObject(parent) {}
-	ObjectA2(ObjectA1* m1, const QVector<int>& m2) :
+	ObjectA2(ObjectA1* m1, const QList<int>& m2) :
 		QObject(nullptr),
 		member1(m1),
 		member2(m2) {}
 
 	ObjectA1* member1;
-	QVector<int> member2;
+	QList<int> member2;
 };
 
 class ObjectA3 : public QObject {
