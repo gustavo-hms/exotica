@@ -30,7 +30,10 @@ class ObjectA1 : public QObject {
 	Q_PROPERTY(QString a13 MEMBER member3)
 
 public:
-	ObjectA1(QObject* parent = nullptr) : QObject(parent) {}
+	ObjectA1(QObject* parent = nullptr) :
+	   	QObject(parent),
+		member1(0),
+		member2(0) {}
 	ObjectA1(int m1, double m2, const QString& m3) :
 		QObject(nullptr),
 		member1(m1),
@@ -48,7 +51,9 @@ class ObjectA2 : public QObject {
 	Q_PROPERTY(QList<int> a22 MEMBER member2)
 
 public:
-	ObjectA2(QObject* parent = nullptr) : QObject(parent) {}
+	ObjectA2(QObject* parent = nullptr) :
+	   	QObject(parent),
+		member1(new ObjectA1(this)) {}
 	ObjectA2(ObjectA1* m1, const QList<int>& m2) :
 		QObject(nullptr),
 		member1(m1),
@@ -64,7 +69,9 @@ class ObjectA3 : public QObject {
 	Q_PROPERTY(ObjectA2* a32 MEMBER member2)
 
 public:
-	ObjectA3(QObject* parent = nullptr) : QObject(parent) {}
+	ObjectA3(QObject* parent = nullptr) :
+	   	QObject(parent),
+		member2(new ObjectA2(this)) {}
 	ObjectA3(const QList<double>& m1, ObjectA2* m2) :
 		QObject(nullptr),
 		member1(m1),
@@ -120,7 +127,11 @@ class ObjectB2 : public QObject {
 	Q_PROPERTY(int b23 MEMBER member3)
 
 public:
-	ObjectB2(QObject* parent = nullptr) : QObject(parent) {}
+	ObjectB2(QObject* parent = nullptr) :
+	   	QObject(parent),
+		member1(0),
+		member2(nullptr),
+		member3(0) {}
 	ObjectB2(int m1, QObject* m2, int m3) :
 		QObject(nullptr),
 		member1(m1),

@@ -150,18 +150,18 @@ void ExoticaTest::unmarshal_data() {
 	QTest::addColumn<QString>("xml");
 	QTest::addColumn<QObject*>("object");
 	QTest::addColumn<QObject*>("expected");
-	QTest::newRow("Simple structure of objects") << objectA3XML << (QObject*) new ObjectA3{{}, new ObjectA2{new ObjectA1{0, 0, ""}, {}}} << (QObject*) objectA3;
-	/* QTest::newRow("Object with a tag name") << objectA4XML << (QObject*) new ObjectA4 << (QObject*) objectA4; */
-	/* QTest::newRow("Object with a global namespace") << objectA5XML << (QObject*) new ObjectA5 << (QObject*) objectA5; */
-	/* QTest::newRow("Inner object with a namespace") << objectB2XML << (QObject*) new ObjectB2 << (QObject*) objectB2; */
-	/* QTest::newRow("Member with the namespace of a parent") << objectB2_3XML << (QObject*) new ObjectB2 << (QObject*) objectB2_3; */
-	/* QTest::newRow("Member with an alias") << objectB2_4XML << (QObject*) new ObjectB2 << (QObject*) objectB2_4; */
-	/* QTest::newRow("An attribute") << objectB2_5XML << (QObject*) new ObjectB2 << (QObject*) objectB2_5; */
-	/* QTest::newRow("Chardata") << objectB6XML  << (QObject*) new ObjectB6 << (QObject*) objectB6; */
-	/* QTest::newRow("Inner XML") << objectB7XML  << (QObject*) new ObjectB7 << (QObject*) objectB7; */
-	/* QTest::newRow("Omitempty with empty values") << objectB8aXML << (QObject*) new ObjectB8 << (QObject*) objectB8a; */
-	/* QTest::newRow("Omitempty whitout empty values") << objectB8bXML << (QObject*) new ObjectB8 << (QObject*) objectB8b; */
-	/* QTest::newRow("Mixed member attributes") << objectB9XML  << (QObject*) new ObjectB9 << (QObject*) objectB9; */
+	QTest::newRow("Simple structure of objects") << objectA3XML << (QObject*) new ObjectA3 << (QObject*) objectA3;
+	QTest::newRow("Object with a tag name") << objectA4XML << (QObject*) new ObjectA4 << (QObject*) objectA4;
+	QTest::newRow("Object with a global namespace") << objectA5XML << (QObject*) new ObjectA5 << (QObject*) objectA5;
+	QTest::newRow("Inner object with a namespace") << objectB2XML << (QObject*) new ObjectB2{0, new ObjectB1, 0} << (QObject*) objectB2;
+	QTest::newRow("Member with the namespace of a parent") << objectB2_3XML << (QObject*) new ObjectB2 {0, new ObjectB3, 0} << (QObject*) objectB2_3;
+	QTest::newRow("Member with an alias") << objectB2_4XML << (QObject*) new ObjectB2 {0, new ObjectB4, 0} << (QObject*) objectB2_4;
+	QTest::newRow("An attribute") << objectB2_5XML << (QObject*) new ObjectB2 {0, new ObjectB5, 0} << (QObject*) objectB2_5;
+	QTest::newRow("Chardata") << objectB6XML  << (QObject*) new ObjectB6 << (QObject*) objectB6;
+	QTest::newRow("Inner XML") << objectB7XML  << (QObject*) new ObjectB7 << (QObject*) objectB7;
+	QTest::newRow("Omitempty with empty values") << objectB8aXML << (QObject*) new ObjectB8 << (QObject*) objectB8a;
+	QTest::newRow("Omitempty whitout empty values") << objectB8bXML << (QObject*) new ObjectB8 << (QObject*) objectB8b;
+	QTest::newRow("Mixed member attributes") << objectB9XML  << (QObject*) new ObjectB9 << (QObject*) objectB9;
 }
 
 void ExoticaTest::unmarshal() {
